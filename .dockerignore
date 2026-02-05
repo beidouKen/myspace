@@ -1,0 +1,24 @@
+# 与 .gitignore 对齐，避免把运行时产物和大文件打进构建上下文
+.git
+.gitignore
+logs/
+outputs/
+cli_tests/out/
+reports/
+reports.tgz
+*.log
+*.tgz
+.venv/
+venv/
+__pycache__/
+**/__pycache__/
+.cache/
+**/.cache/
+node_modules/
+.idea/
+.vscode/
+*.code-workspace
+.env
+.env.*
+models/
+pre_cleanup_snapshot/

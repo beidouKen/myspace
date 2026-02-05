@@ -9,11 +9,22 @@
 | 变量 | 说明 | 默认示例 |
 |------|------|----------|
 | **MODEL_DIR** | 模型权重目录，必须存在 | `/root/models/zai-org/GLM-Image` |
-| **OUTPUTS_DIR** | 生成图输出目录，必须可写 | `./outputs` 或项目内 `outputs/` |
+| **OUTPUTS_DIR** | 生成图输出目录，必须可写 | 镜像内默认 `/app/outputs`，可被环境变量覆盖 |
 | **PORT** | 网关监听端口 | 8000 |
 | **BACKEND_PORT_START** | 后端起始端口（多卡时依次递增） | 8001 |
 
 启动时会对 `MODEL_DIR` 存在性、`OUTPUTS_DIR` 可写性做自检，失败则 `exit 1` 并提示。
+
+---
+
+## 模型挂载说明（Docker）
+
+- **MODEL_DIR** 默认值为 `/root/models/zai-org/GLM-Image`。容器内该路径必须存在且含模型权重，否则启动自检报错退出。
+- 运行镜像时需把宿主机模型目录挂载到该路径，或通过 `-e MODEL_DIR=/mnt/models/...` 指定并挂载到对应路径。示例：  
+  `docker run -e MODEL_DIR=/models/zai-org/GLM-Image -v /宿主机/模型目录:/models ...`
+
+- **Docker 构建与运行**：在项目根执行 `docker build -t glm-image-service .`（使用 `requirements.lock.docker.txt`）。运行示例：挂载模型并暴露端口  
+  `docker run --rm -p 8000:8000 -e MODEL_DIR=/models/zai-org/GLM-Image -v /宿主机/模型:/models -v /宿主机/outputs:/app/outputs glm-image-service`
 
 ---
 
@@ -65,7 +76,7 @@ BASE_URL=http://127.0.0.1:8000 ./cli_tests/run_smoke.sh
 - **pip 源**  
   建议使用国内镜像加速安装，例如：  
   `pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`  
-  安装依赖：`pip install -r requirements.txt`。
+  本地安装依赖：`pip install -r requirements.txt`。**镜像构建**使用 `requirements.lock.docker.txt` 以固定版本。
 
 - **outputs 访问**  
   生成图落盘在 `OUTPUTS_DIR`，网关对外提供 `GET /outputs/{filename}` 静态访问。若通过反向代理或域名访问网关，需保证该路径被正确转发；直接访问时图片 URL 形如：`http://<host>:<PORT>/outputs/<task_id>.png`。
